@@ -21,11 +21,10 @@ jobs:
           kubectl version --client
 
       - name: Set up Kubernetes config
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}  # Store your kubeconfig in GitHub secrets
         run: |
-          echo "${KUBECONFIG}" > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
+          mkdir -p $HOME/.kube  # Create the .kube directory if it doesn't exist
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config  # Store the kubeconfig in the config file
+          chmod 600 $HOME/.kube/config  # Set permissions on the kubeconfig file
 
       - name: Install Ingress NGINX Controller
         run: |
