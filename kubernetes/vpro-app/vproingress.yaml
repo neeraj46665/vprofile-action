@@ -3,15 +3,9 @@ kind: Ingress
 metadata:
   name: vpro-ingress
   annotations:
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-
-    
+    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
-  tls:  # Configure TLS settings
-  - hosts:
-      - vprofile.instantsummaries.online  # The domain for which the certificate is issued
-     
   rules:
   - host: vprofile.instantsummaries.online
     http:
