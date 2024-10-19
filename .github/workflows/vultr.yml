@@ -1,6 +1,5 @@
 name: CI/CD Pipeline for Kubernetes Deployment
 
-# Trigger the workflow on push or pull request to the main branch
 on:
   push:
     branches:
@@ -10,7 +9,6 @@ on:
       - main
 
 jobs:
-  # Deploy to Kubernetes job
   deploy:
     runs-on: ubuntu-latest
 
@@ -23,12 +21,15 @@ jobs:
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
-          kubectl get crd -l app.kubernetes.io/name=cert-manager
 
       - name: Set up Kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
+
+      # Add a debug step to verify if kubeconfig is set correctly
+      - name: Debug Kubeconfig (for debugging only)
+        run: cat $HOME/.kube/config
 
       - name: Apply Kubernetes Manifests
         run: |
