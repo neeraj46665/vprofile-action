@@ -27,10 +27,32 @@ jobs:
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
 
-      # Add a debug step to verify if kubeconfig is set correctly
-      - name: Debug Kubeconfig (for debugging only)
-        run: cat $HOME/.kube/config
-
+      # Apply Kubernetes Manifests
       - name: Apply Kubernetes Manifests
         run: |
+          echo "Applying Kubernetes Manifests..."
           kubectl apply -f kubernetes/vpro-app/
+
+      # Print all Nodes information after applying manifests
+      - name: Print Nodes Info
+        run: |
+          echo "Printing Nodes Info after applying manifests:"
+          kubectl get nodes -o wide
+
+      # Print all Services information after applying manifests
+      - name: Print Services Info
+        run: |
+          echo "Printing Services Info after applying manifests:"
+          kubectl get svc -A -o wide
+
+      # Print all Endpoints information after applying manifests
+      - name: Print Endpoints Info
+        run: |
+          echo "Printing Endpoints Info after applying manifests:"
+          kubectl get endpoints -A -o wide
+
+      # Print Load Balancer information after applying manifests
+      - name: Print Load Balancer Services Info
+        run: |
+          echo "Printing LoadBalancer Services Info after applying manifests:"
+          kubectl get svc -A --field-selector spec.type=LoadBalancer
