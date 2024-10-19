@@ -45,7 +45,21 @@ jobs:
       - name: Show ingress endpoint
         run: |
           kubectl get ingress vpro-ingress
-
-      - name: Port Forwarding
+          
+      - name: Wait for Ingress to be ready
         run: |
-          nohup kubectl port-forward svc/my-app 8080:8080 --address=0.0.0.0 &
+          echo "Waiting for Ingress to be ready..."
+          while true; do
+            STATUS=$(kubectl get ingress vpro-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            if [[ -n "$STATUS" ]]; then
+              echo "Ingress is ready with IP: $STATUS"
+              break
+            else
+              echo "Waiting for Ingress to be ready..."
+              sleep 10
+            fi
+          done
+
+      # - name: Port Forwarding
+      #   run: |
+      #     nohup kubectl port-forward svc/my-app 8081:8080 --address=0.0.0.0 &
