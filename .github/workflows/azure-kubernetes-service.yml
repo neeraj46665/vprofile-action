@@ -20,7 +20,13 @@ jobs:
           sudo mv ./kubectl /usr/local/bin/kubectl
           kubectl version --client
 
-     
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
 
       - name: Set up Kubernetes config
         run: |
@@ -28,12 +34,13 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config  # Store the kubeconfig in the config file
           chmod 600 $HOME/.kube/config  # Set permissions on the kubeconfig file
 
-     
-
-      - name: Install Ingress NGINX Controller using Helm
+      - name: Install Ingress NGINX Controller
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
-          
+          kubectl create namespace ingress-nginx || echo "Namespace ingress-nginx already exists"
+          helm upgrade --install ingress-nginx ingress-nginx \
+            --repo https://kubernetes.github.io/ingress-nginx \
+            --namespace ingress-nginx
+          kubectl get pods -n ingress-nginx
 
       - name: Deploy application
         run: |
@@ -68,4 +75,3 @@ jobs:
       - name: Port Forwarding
         run: |
           nohup kubectl port-forward svc/my-app 8081:8080 --address=0.0.0.0 &
-          
