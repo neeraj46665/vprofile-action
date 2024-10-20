@@ -20,9 +20,7 @@ jobs:
           sudo mv ./kubectl /usr/local/bin/kubectl
           kubectl version --client
 
-      - name: Install Helm
-        run: |
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+     
 
       - name: Set up Kubernetes config
         run: |
@@ -34,9 +32,7 @@ jobs:
 
       - name: Install Ingress NGINX Controller using Helm
         run: |
-          helm upgrade --install ingress-nginx ingress-nginx \
-           --repo https://kubernetes.github.io/ingress-nginx \
-            --namespace default
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
           
 
       - name: Deploy application
