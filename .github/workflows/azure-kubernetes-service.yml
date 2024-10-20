@@ -32,7 +32,7 @@ jobs:
 
       - name: Create Ingress Namespace
         run: |
-          kubectl create namespace ingress-nginx || echo "Namespace ingress-nginx already exists"
+          kubectl create namespace ingress-nginx
 
       - name: Install Ingress NGINX Controller using Helm
         run: |
