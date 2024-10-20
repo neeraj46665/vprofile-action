@@ -30,15 +30,13 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config  # Store the kubeconfig in the config file
           chmod 600 $HOME/.kube/config  # Set permissions on the kubeconfig file
 
-      - name: Create Ingress Namespace
-        run: |
-          kubectl create namespace ingress-nginx
+     
 
       - name: Install Ingress NGINX Controller using Helm
         run: |
           helm upgrade --install ingress-nginx ingress-nginx \
            --repo https://kubernetes.github.io/ingress-nginx \
-           --namespace ingress-nginx
+          
 
       - name: Deploy application
         run: |
