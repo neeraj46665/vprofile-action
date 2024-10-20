@@ -20,15 +20,25 @@ jobs:
           sudo mv ./kubectl /usr/local/bin/kubectl
           kubectl version --client
 
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
       - name: Set up Kubernetes config
         run: |
           mkdir -p $HOME/.kube  # Create the .kube directory if it doesn't exist
           echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config  # Store the kubeconfig in the config file
           chmod 600 $HOME/.kube/config  # Set permissions on the kubeconfig file
 
-      - name: Install Ingress NGINX Controller
+      - name: Create Ingress Namespace
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+          kubectl create namespace ingress-nginx || echo "Namespace ingress-nginx already exists"
+
+      - name: Install Ingress NGINX Controller using Helm
+        run: |
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm upgrade --install ingress-nginx ingress-nginx \
+            --namespace ingress-nginx
 
       - name: Deploy application
         run: |
