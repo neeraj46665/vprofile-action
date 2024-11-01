@@ -1,78 +1,78 @@
-name: Deploy to Kubernetes
+# name: Deploy to Kubernetes
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
 
-      - name: Install kubectl
-        run: |
-          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x ./kubectl
-          sudo mv ./kubectl /usr/local/bin/kubectl
-          kubectl version --client
+#       - name: Install kubectl
+#         run: |
+#           curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+#           chmod +x ./kubectl
+#           sudo mv ./kubectl /usr/local/bin/kubectl
+#           kubectl version --client
 
-      - name: Install Helm
-        run: |
-          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
-          sudo apt-get install apt-transport-https --yes
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-          sudo apt-get update
-          sudo apt-get install helm
+#       - name: Install Helm
+#         run: |
+#           curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+#           sudo apt-get install apt-transport-https --yes
+#           echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+#           sudo apt-get update
+#           sudo apt-get install helm
 
-      - name: Set up Kubernetes config
-        run: |
-          mkdir -p $HOME/.kube  # Create the .kube directory if it doesn't exist
-          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config  # Store the kubeconfig in the config file
-          chmod 600 $HOME/.kube/config  # Set permissions on the kubeconfig file
+#       - name: Set up Kubernetes config
+#         run: |
+#           mkdir -p $HOME/.kube  # Create the .kube directory if it doesn't exist
+#           echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config  # Store the kubeconfig in the config file
+#           chmod 600 $HOME/.kube/config  # Set permissions on the kubeconfig file
 
-      - name: Install Ingress NGINX Controller
-        run: |
-          kubectl create namespace ingress-nginx || echo "Namespace ingress-nginx already exists"
-          helm upgrade --install ingress-nginx ingress-nginx \
-            --repo https://kubernetes.github.io/ingress-nginx \
-            --namespace ingress-nginx
-          kubectl get pods -n ingress-nginx
+#       - name: Install Ingress NGINX Controller
+#         run: |
+#           kubectl create namespace ingress-nginx || echo "Namespace ingress-nginx already exists"
+#           helm upgrade --install ingress-nginx ingress-nginx \
+#             --repo https://kubernetes.github.io/ingress-nginx \
+#             --namespace ingress-nginx
+#           kubectl get pods -n ingress-nginx
 
-      - name: Deploy application
-        run: |
-          kubectl apply -f kubernetes/vpro-app/  # Apply all YAML files in the directory
+#       - name: Deploy application
+#         run: |
+#           kubectl apply -f kubernetes/vpro-app/  # Apply all YAML files in the directory
 
-      - name: Show all services
-        run: |
-          kubectl get svc --all-namespaces
+#       - name: Show all services
+#         run: |
+#           kubectl get svc --all-namespaces
 
-      - name: Show deployments
-        run: |
-          kubectl get deploy --all-namespaces
+#       - name: Show deployments
+#         run: |
+#           kubectl get deploy --all-namespaces
 
-      - name: Show ingress endpoint
-        run: |
-          kubectl get ingress vpro-ingress
+#       - name: Show ingress endpoint
+#         run: |
+#           kubectl get ingress vpro-ingress
           
-      - name: Wait for Ingress to be ready
-        run: |
-          echo "Waiting for Ingress to be ready..."
-          while true; do
-            STATUS=$(kubectl get ingress vpro-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-            if [[ -n "$STATUS" ]]; then
-              echo "Ingress is ready with IP: $STATUS"
-              break
-            else
-              echo "Waiting for Ingress to be ready..."
-              sleep 10
-            fi
-          done
+#       - name: Wait for Ingress to be ready
+#         run: |
+#           echo "Waiting for Ingress to be ready..."
+#           while true; do
+#             STATUS=$(kubectl get ingress vpro-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+#             if [[ -n "$STATUS" ]]; then
+#               echo "Ingress is ready with IP: $STATUS"
+#               break
+#             else
+#               echo "Waiting for Ingress to be ready..."
+#               sleep 10
+#             fi
+#           done
 
-      - name: Port Forwarding
-        run: |
-          nohup kubectl port-forward svc/my-app 8081:8080 --address=0.0.0.0 &
-          #
+#       - name: Port Forwarding
+#         run: |
+#           nohup kubectl port-forward svc/my-app 8081:8080 --address=0.0.0.0 &
+#           #
